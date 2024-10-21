@@ -5,7 +5,7 @@ namespace Drupal\ctools_wizard_test\Wizard;
 /**
  *
  */
-class EntityAddWizard extends EntityEditWizard {
+class EntityAddWizardTest extends EntityEditWizardTest {
 
   /**
    * {@inheritdoc}

@@ -60,4 +60,14 @@
 /drush
 /drupal.phar
 /drupal
-/.ddev
+
+# Ignore Tucleen vendor dependencies and scripts
+/web/themes/custom/bell_devportal/node_modules/
+/web/themes/custom/bell_devportal/package-lock.json
+
+# Custom list of ignore items
+/web/modules/contrib/**/*
+/web/profiles/contrib/**/*
+/web/themes/contrib/**/*
+.db/**/*
+.scripts/**/*

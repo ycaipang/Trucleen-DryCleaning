@@ -1,8 +1,7 @@
 <?php
 
-namespace Drupal\token\Drush\Commands;
+namespace Drupal\token\Commands;
 
-use Drupal\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drush\Commands\DrushCommands;
 
@@ -26,15 +25,6 @@ class TokenCommands extends DrushCommands {
    */
   public function __construct(ModuleHandlerInterface $moduleHandler) {
     $this->moduleHandler = $moduleHandler;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container): self {
-    return new static(
-      $container->get('module_handler')
-    );
   }
 
   /**

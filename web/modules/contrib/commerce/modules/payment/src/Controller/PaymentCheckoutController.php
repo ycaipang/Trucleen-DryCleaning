@@ -137,9 +137,6 @@ class PaymentCheckoutController implements ContainerInjectionInterface {
       $payment_gateway_plugin->onReturn($order, $request);
       $redirect_step_id = $checkout_flow_plugin->getNextStepId($step_id);
     }
-    catch (NeedsRedirectException $e) {
-      throw $e;
-    }
     catch (PaymentGatewayException $e) {
       $event = new FailedPaymentEvent($order, $payment_gateway, $e);
       $this->eventDispatcher->dispatch($event, PaymentEvents::PAYMENT_FAILURE);

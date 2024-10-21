@@ -5,11 +5,8 @@ namespace Drupal\commerce_shipping\Form;
 use Drupal\Core\Entity\ContentEntityForm;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Link;
-use Drupal\entity\Form\EntityDuplicateFormTrait;
 
 class ShippingMethodForm extends ContentEntityForm {
-
-  use EntityDuplicateFormTrait;
 
   /**
    * {@inheritdoc}

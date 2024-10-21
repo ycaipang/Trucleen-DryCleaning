@@ -1,48 +1,54 @@
 <?php
 
-namespace Drupal\devel\Drush\Commands;
+namespace Drupal\devel\Commands;
 
-use Consolidation\AnnotatedCommand\Hooks\HookManager;
 use Consolidation\OutputFormatters\StructuredData\RowsOfFields;
-use Consolidation\SiteAlias\SiteAliasManagerInterface;
+use Consolidation\SiteAlias\SiteAliasManagerAwareTrait;
 use Consolidation\SiteProcess\Util\Escape;
 use Drupal\Component\Uuid\Php;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Utility\Token;
-use Drush\Attributes as CLI;
-use Drush\Commands\AutowireTrait;
 use Drush\Commands\DrushCommands;
-use Drush\Commands\pm\PmCommands;
-use Drush\Drush;
 use Drush\Exceptions\UserAbortException;
 use Drush\Exec\ExecTrait;
+use Drush\SiteAlias\SiteAliasManagerAwareInterface;
 use Drush\Utils\StringUtils;
-use Psr\Container\ContainerInterface;
 use Symfony\Component\Console\Input\Input;
 use Symfony\Component\Console\Output\Output;
-use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
-final class DevelCommands extends DrushCommands {
-  use AutowireTrait;
+/**
+ * Class DevelCommands.
+ *
+ * For commands that are parts of modules, Drush expects to find commandfiles in
+ * __MODULE__/src/Commands, and the namespace is Drupal/__MODULE__/Commands.
+ *
+ * In addition to a commandfile like this one, you need to add a
+ * drush.services.yml in root of your module like this module does.
+ */
+class DevelCommands extends DrushCommands implements SiteAliasManagerAwareInterface {
+
+  use SiteAliasManagerAwareTrait;
   use ExecTrait;
 
-  const REINSTALL = 'devel:reinstall';
-  const HOOK = 'devel:hook';
-  const EVENT = 'devel:event';
-  const TOKEN = 'devel:token';
-  const UUID = 'devel:uuid';
-  const SERVICES = 'devel:services';
+  protected Token $token;
+
+  protected ContainerInterface $container;
+
+  protected EventDispatcherInterface $eventDispatcher;
+
+  protected ModuleHandlerInterface $moduleHandler;
 
   /**
    * Constructs a new DevelCommands object.
    */
-  public function __construct(
-    protected Token $token,
-    protected EventDispatcherInterface $eventDispatcher,
-    protected ModuleHandlerInterface $moduleHandler,
-    private SiteAliasManagerInterface $siteAliasManager,
-  ) {
+  public function __construct(Token $token, $container, $eventDispatcher, $moduleHandler) {
     parent::__construct();
+    $this->token = $token;
+    $this->container = $container;
+    $this->eventDispatcher = $eventDispatcher;
+    $this->moduleHandler = $moduleHandler;
   }
 
   /**
@@ -51,7 +57,7 @@ final class DevelCommands extends DrushCommands {
    * @return \Drupal\Core\Extension\ModuleHandlerInterface
    *   The moduleHandler.
    */
-  public function getModuleHandler(): ModuleHandlerInterface {
+  public function getModuleHandler() {
     return $this->moduleHandler;
   }
 
@@ -61,7 +67,7 @@ final class DevelCommands extends DrushCommands {
    * @return mixed
    *   The eventDispatcher.
    */
-  public function getEventDispatcher(): EventDispatcherInterface {
+  public function getEventDispatcher() {
     return $this->eventDispatcher;
   }
 
@@ -71,8 +77,8 @@ final class DevelCommands extends DrushCommands {
    * @return mixed
    *   The container.
    */
-  public function getContainer(): ContainerInterface {
-    return Drush::getContainer()->get('service_container');
+  public function getContainer() {
+    return $this->container;
   }
 
   /**
@@ -81,33 +87,46 @@ final class DevelCommands extends DrushCommands {
    * @return \Drupal\Core\Utility\Token
    *   The token.
    */
-  public function getToken(): Token {
+  public function getToken() {
     return $this->token;
   }
 
   /**
    * Uninstall, and Install modules.
+   *
+   * @command devel:reinstall
+   * @aliases dre,devel-reinstall
+   * @allow-additional-options pm-uninstall,pm-enable
+   *
+   * @param string $modules
+   *   A comma-separated list of module names.
    */
-  #[CLI\Command(name: self::REINSTALL, aliases: ['dre', 'devel-reinstall'])]
-  #[CLI\Argument(name: 'modules', description: 'A comma-separated list of module names.')]
-  public function reinstall($modules): void {
+  public function reinstall($modules) {
     $modules = StringUtils::csvToArray($modules);
+
     $modules_str = implode(',', $modules);
-    $process = $this->processManager()->drush($this->siteAliasManager->getSelf(), PmCommands::UNINSTALL, [$modules_str]);
+    $process = $this->processManager()->drush($this->siteAliasManager()->getSelf(), 'pm:uninstall', [$modules_str]);
     $process->mustRun();
-    $process = $this->processManager()->drush($this->siteAliasManager->getSelf(), PmCommands::INSTALL, [$modules_str]);
+    $process = $this->processManager()->drush($this->siteAliasManager()->getSelf(), 'pm:enable', [$modules_str]);
     $process->mustRun();
   }
 
   /**
    * List implementations of a given hook and optionally edit one.
+   *
+   * @command devel:hook
+   *
+   * @param string $hook
+   *   The name of the hook to explore.
+   * @param string $implementation
+   *   The name of the implementation to edit. Usually omitted.
+   *
+   * @usage devel-hook cron
+   *   List implementations of hook_cron().
+   * @aliases fnh,fn-hook,hook,devel-hook
+   * @optionset_get_editor
    */
-  #[CLI\Command(name: self::HOOK, aliases: ['fnh', 'fn-hook', 'hook', 'devel-hook'])]
-  #[CLI\Argument(name: 'hook', description: 'The name of the hook to explore.')]
-  #[CLI\Argument(name: 'implementation', description: 'The name of the implementation to edit. Usually omitted')]
-  #[CLI\Usage(name: 'devel:hook cron', description: 'List implementations of hook_cron().')]
-  #[CLI\OptionsetGetEditor()]
-  public function hook($hook, string $implementation): void {
+  public function hook($hook, $implementation) {
     // Get implementations in the .install files as well.
     include_once './core/includes/install.inc';
     drupal_load_updates();
@@ -121,9 +140,10 @@ final class DevelCommands extends DrushCommands {
 
   /**
    * Asks the user to select a hook implementation.
+   *
+   * @hook interact hook
    */
-  #[CLI\Hook(type: HookManager::INTERACT, target: self::HOOK)]
-  public function hookInteract(Input $input, Output $output): void {
+  public function hookInteract(Input $input, Output $output) {
     $hook_implementations = [];
     if (!$input->getArgument('implementation')) {
       foreach ($this->getModuleHandler()->getModuleList() as $key => $extension) {
@@ -145,13 +165,22 @@ final class DevelCommands extends DrushCommands {
 
   /**
    * List implementations of a given event and optionally edit one.
+   *
+   * @command devel:event
+   *
+   * @param string $event
+   *   The name of the event to explore. If omitted, a list of events is shown.
+   * @param string $implementation
+   *   The name of the implementation to show. Usually omitted.
+   *
+   * @usage devel-event
+   *   Pick a Kernel event, then pick an implementation, and then view its
+   *   source code.
+   * @usage devel-event kernel.terminate
+   *   Pick a terminate subscribers implementation and view its source code.
+   * @aliases fne,fn-event,event
    */
-  #[CLI\Command(name: self::EVENT, aliases: ['fne', 'fn-event', 'event'])]
-  #[CLI\Argument(name: 'event', description: 'The name of the event to explore. If omitted, a list of events is shown.')]
-  #[CLI\Argument(name: 'implementation', description: 'The name of the implementation to show. Usually omitted.')]
-  #[CLI\Usage(name: 'drush devel:event', description: 'Pick a Kernel event, then pick an implementation, and then view its source code')]
-  #[CLI\Usage(name: 'devel-event kernel.terminate', description: 'Pick a terminate subscribers implementation and view its source code.')]
-  public function event($event, $implementation): void {
+  public function event($event, $implementation) {
     $info = $this->codeLocate($implementation);
     $exec = self::getEditor('');
     $cmd = sprintf($exec, Escape::shellArg($info['file']));
@@ -162,9 +191,11 @@ final class DevelCommands extends DrushCommands {
 
   /**
    * Asks the user to select an event and the event's implementation.
+   *
+   * @hook interact devel:event
    */
-  #[CLI\Hook(type: HookManager::INTERACT, target: self::EVENT)]
-  public function interactEvent(Input $input, Output $output): void {
+  public function interactEvent(Input $input, Output $output) {
+    $dispatcher = $this->getEventDispatcher();
     $event = $input->getArgument('event');
     if (!$event) {
       // @todo Expand this list.
@@ -182,9 +213,9 @@ final class DevelCommands extends DrushCommands {
       }
       $input->setArgument('event', $event);
     }
-    if ($implementations = $this->eventDispatcher->getListeners($event)) {
+    if ($implementations = $dispatcher->getListeners($event)) {
       foreach ($implementations as $implementation) {
-        $callable = $implementation[0]::class . '::' . $implementation[1];
+        $callable = get_class($implementation[0]) . '::' . $implementation[1];
         $choices[$callable] = $callable;
       }
       if (!$choice = $this->io()->choice('Enter the number of the implementation you wish to view.', $choices)) {
@@ -199,11 +230,19 @@ final class DevelCommands extends DrushCommands {
 
   /**
    * List available tokens.
+   *
+   * @command devel:token
+   * @aliases token,devel-token
+   * @field-labels
+   *   group: Group
+   *   token: Token
+   *   name: Name
+   * @default-fields group,token,name
+   *
+   * @return \Consolidation\OutputFormatters\StructuredData\RowsOfFields
+   *   The tokens structured in a RowsOfFields object.
    */
-  #[CLI\Command(name: self::TOKEN, aliases: ['token', 'devel-token'])]
-  #[CLI\FieldLabels(labels: ['group' => 'Group', 'token' => 'Token', 'name' => 'Name'])]
-  #[CLI\DefaultTableFields(fields: ['group', 'token', 'name'])]
-  public function token($options = ['format' => 'table']): RowsOfFields {
+  public function token($options = ['format' => 'table']) {
     $all = $this->getToken()->getInfo();
     foreach ($all['tokens'] as $group => $tokens) {
       foreach ($tokens as $key => $token) {
@@ -219,9 +258,15 @@ final class DevelCommands extends DrushCommands {
 
   /**
    * Generate a Universally Unique Identifier (UUID).
+   *
+   * @command devel:uuid
+   * @aliases uuid,devel-uuid
+   * @usage drush devel-uuid
+   *
+   * @return string
+   *   The generated uuid.
    */
-  #[CLI\Command(name: self::UUID, aliases: ['uuid', 'devel-uuid'])]
-  public function uuid(): string {
+  public function uuid() {
     $uuid = new Php();
     return $uuid->generate();
   }
@@ -229,12 +274,12 @@ final class DevelCommands extends DrushCommands {
   /**
    * Get source code line for specified function or method.
    */
-  public function codeLocate($function_name): array {
+  public function codeLocate($function_name) {
     // Get implementations in the .install files as well.
     include_once './core/includes/install.inc';
     drupal_load_updates();
 
-    if (!str_contains($function_name, '::')) {
+    if (strpos($function_name, '::') === FALSE) {
       if (!function_exists($function_name)) {
         throw new \Exception(dt('Function not found'));
       }
@@ -257,12 +302,24 @@ final class DevelCommands extends DrushCommands {
 
   /**
    * Get a list of available container services.
+   *
+   * @command devel:services
+   *
+   * @param string $prefix
+   *   Optional prefix to filter the service list by.
+   * @param array $options
+   *   An array of options (is this used?)
+   *
+   * @aliases devel-container-services,dcs,devel-services
+   * @usage drush devel-services
+   *   Gets a list of all available container services
+   * @usage drush dcs plugin.manager
+   *   Get all services containing "plugin.manager"
+   *
+   * @return array
+   *   The container service ids.
    */
-  #[CLI\Command(name: self::SERVICES, aliases: ['devel-container-services', 'dcs', 'devel-services'])]
-  #[CLI\Argument(name: 'prefix', description: 'Optional prefix to filter the service list by.')]
-  #[CLI\Usage(name: 'drush devel-services', description: 'Gets a list of all available container services')]
-  #[CLI\Usage(name: 'drush dcs plugin.manager', description: 'Get all services containing "plugin.manager"')]
-  public function services($prefix = NULL, array $options = ['format' => 'yaml']): array {
+  public function services($prefix = NULL, array $options = ['format' => 'yaml']) {
     $container = $this->getContainer();
 
     // Get a list of all available service IDs.

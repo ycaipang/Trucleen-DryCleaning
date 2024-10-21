@@ -2,11 +2,8 @@
 
 namespace Drupal\ctools\Plugin\Block;
 
-use Drupal\Component\Plugin\Exception\ContextException;
-use Drupal\Core\Access\AccessResultForbidden;
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Cache\CacheableMetadata;
-use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\EntityDisplayRepositoryInterface;
 use Drupal\Core\Form\FormStateInterface;
@@ -24,8 +21,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * )
  */
 class EntityView extends BlockBase implements ContextAwarePluginInterface, ContainerFactoryPluginInterface {
-
-  static protected $recusion = [];
 
   /**
    * The entity type manager.
@@ -104,17 +99,6 @@ class EntityView extends BlockBase implements ContextAwarePluginInterface, Conta
     $this->configuration['view_mode'] = $form_state->getValue('view_mode');
   }
 
-  protected function accessRecursion(EntityInterface $entity, array $config) {
-    if (!isset(self::$recusion[$entity->uuid()][$config['view_mode']])) {
-      self::$recusion[$entity->uuid()][$config['view_mode']] = 0;
-    }
-    return self::$recusion[$entity->uuid()][$config['view_mode']]++;
-  }
-
-  protected function getAccessRecursion(EntityInterface $entity, array $config) {
-    return self::$recusion[$entity->uuid()][$config['view_mode']] ?? 0;
-  }
-
   /**
    * {@inheritdoc}
    */
@@ -127,25 +111,15 @@ class EntityView extends BlockBase implements ContextAwarePluginInterface, Conta
 
     /** @var \Drupal\Core\Entity\EntityInterface $entity */
     $entity = $this->getContextValue('entity');
-    if ($entity) {
-      if ($this->getAccessRecursion($entity, $this->getConfiguration())) {
-        return $return_as_object ? new AccessResultForbidden() : FALSE;
-      }
-      return $entity->access('view', $account, $return_as_object);
-    }
-    return new AccessResultForbidden("No Entity Found.");
+    return $entity->access('view', $account, $return_as_object);
   }
 
   /**
    * {@inheritdoc}
    */
   public function build() {
-    /** @var $entity \Drupal\Core\Entity\EntityInterface */
+    /** @var \Drupal\Core\Entity\EntityInterface $entity */
     $entity = $this->getContextValue('entity');
-    $build = [];
-    if ($this::accessRecursion($entity, $this->getConfiguration())) {
-      return $build;
-    }
 
     $view_builder = $this->entityTypeManager->getViewBuilder($entity->getEntityTypeId());
     $build = $view_builder->view($entity, $this->configuration['view_mode']);

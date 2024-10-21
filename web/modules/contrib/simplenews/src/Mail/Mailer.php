@@ -318,7 +318,7 @@ class Mailer implements MailerInterface {
    */
   public function sendMail(MailInterface $mail) {
     $params['simplenews_mail'] = $mail;
-    if ($mail->getKey() == 'node') {
+    if ($mail->getKey('test') == 'node') {
       // Suppress error message as it causes cron failures.
       $params['_error_message'] = FALSE;
     }

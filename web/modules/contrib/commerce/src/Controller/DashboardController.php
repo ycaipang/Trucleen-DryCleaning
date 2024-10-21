@@ -57,7 +57,7 @@ class DashboardController extends ControllerBase {
         'library' => ['commerce/dashboard'],
       ],
       '#prefix' => '<div class="commerce-dashboard">',
-      '#suffix' => '</div>',
+      '#sufix' => '</div>',
     ];
 
     if ($links = $this->getManagementLinks()) {
@@ -167,7 +167,7 @@ class DashboardController extends ControllerBase {
       $links[$key] = [
         'title' => $link->getTitle(),
         'description' => $link->getDescription(),
-        'url' => Url::fromRoute($link->getRouteName(), $link->getRouteParameters()),
+        'url' => Url::fromRoute($link->getRouteName()),
         'weight' => $link->getWeight(),
       ];
     }

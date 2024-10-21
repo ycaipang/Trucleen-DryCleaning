@@ -143,7 +143,7 @@ abstract class NumberPatternBase extends PluginBase implements NumberPatternInte
     $number = $this->token->replace($this->configuration['pattern'], [
       'pattern' => [],
       $entity->getEntityTypeId() => $entity,
-    ], ['clear' => TRUE], new BubbleableMetadata());
+    ], [], new BubbleableMetadata());
 
     return $number;
   }

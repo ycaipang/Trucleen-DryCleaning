@@ -14,7 +14,7 @@ class DevelControllerTest extends DevelBrowserTestBase {
    *
    * @var array
    */
-  protected static $modules = [
+  public static $modules = [
     'devel',
     'node',
     'entity_test',
@@ -94,7 +94,7 @@ class DevelControllerTest extends DevelBrowserTestBase {
   /**
    * Tests route generation.
    */
-  public function testRouteGeneration(): void {
+  public function testRouteGeneration() {
     // Test Devel load and render routes for entities with both route
     // definitions.
     $this->drupalGet('entity_test/' . $this->entity->id());
@@ -128,10 +128,7 @@ class DevelControllerTest extends DevelBrowserTestBase {
     $this->assertSession()->elementExists('xpath',
       '//a[@data-drupal-link-system-path = "devel/render/devel_entity_test_canonical/' . $this->entityCanonical->id() . '"]');
     $this->drupalGet('devel/devel_entity_test_canonical/' . $this->entityCanonical->id());
-    // This url used to be '404 not found', but is now '200 OK' following the
-    // generating of devel load links for all entity types.
-    // @see https://gitlab.com/drupalspoons/devel/-/issues/377
-    $this->assertSession()->statusCodeEquals(200);
+    $this->assertSession()->statusCodeEquals(404);
     $this->drupalGet('devel/render/devel_entity_test_canonical/' . $this->entityCanonical->id());
     $this->assertSession()->statusCodeEquals(200);
     $this->assertSession()->LinkExists('Definition');
@@ -166,7 +163,7 @@ class DevelControllerTest extends DevelBrowserTestBase {
     $this->drupalGet('devel_entity_test_no_links/' . $this->entityEdit->id());
     $this->assertSession()->statusCodeEquals(404);
     $this->drupalGet('devel/devel_entity_test_no_links/' . $this->entityNoLinks->id());
-    $this->assertSession()->statusCodeEquals(200);
+    $this->assertSession()->statusCodeEquals(404);
     $this->drupalGet('devel/render/devel_entity_test_no_links/' . $this->entityNoLinks->id());
     $this->assertSession()->statusCodeEquals(404);
     $this->drupalGet('devel/definition/devel_entity_test_no_links/' . $this->entityNoLinks->id());

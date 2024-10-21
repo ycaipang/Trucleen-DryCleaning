@@ -7,18 +7,12 @@ use Drupal\Tests\views_ui\Functional\UITestBase;
 use Drupal\views\Tests\ViewTestData;
 use Drupal\taxonomy\Entity\Vocabulary;
 use Drupal\Tests\taxonomy\Traits\TaxonomyTestTrait;
-use Drupal\Tests\field\Traits\EntityReferenceFieldCreationTrait;
+use Drupal\Tests\field\Traits\EntityReferenceTestTrait;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Language\LanguageInterface;
 use Drupal\Core\Entity\Element\EntityAutocomplete;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\node\Entity\Node;
-
-// Workaround to support tests against Drupal 10.1.x and below.
-// @todo Remove once we end support for Drupal 10.1.x and below.
-if (!trait_exists(EntityReferenceFieldCreationTrait::class)) {
-  class_alias('\Drupal\Tests\field\Traits\EntityReferenceTestTrait', EntityReferenceFieldCreationTrait::class);
-}
 
 /**
  * Tests the ctools_views block display plugin overriding entity View filters.
@@ -28,7 +22,7 @@ if (!trait_exists(EntityReferenceFieldCreationTrait::class)) {
  */
 class CToolsViewsEntityViewBlockTest extends UITestBase {
 
-  use EntityReferenceFieldCreationTrait;
+  use EntityReferenceTestTrait;
   use TaxonomyTestTrait;
 
   /**

@@ -82,6 +82,7 @@ class PromotionForm extends ContentEntityForm {
     }
 
     $form['#theme'] = ['commerce_promotion_form'];
+    $form['#attached']['library'][] = 'commerce_promotion/form';
     $form['advanced'] = [
       '#type' => 'container',
       '#attributes' => ['class' => ['entity-meta']],

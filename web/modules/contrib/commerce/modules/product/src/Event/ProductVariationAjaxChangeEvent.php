@@ -64,7 +64,7 @@ class ProductVariationAjaxChangeEvent extends EventBase {
    * The ajax response.
    *
    * @return \Drupal\Core\Ajax\AjaxResponse
-   *   The ajax response.
+   *   The ajax reponse.
    */
   public function getResponse() {
     return $this->response;

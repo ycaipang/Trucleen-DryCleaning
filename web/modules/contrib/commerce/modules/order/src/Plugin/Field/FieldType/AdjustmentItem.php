@@ -14,7 +14,7 @@ use Drupal\Core\TypedData\DataDefinition;
  *   id = "commerce_adjustment",
  *   label = @Translation("Adjustment"),
  *   description = @Translation("Stores adjustments to the parent entity's price."),
- *   category = "commerce",
+ *   category = @Translation("Commerce"),
  *   list_class = "\Drupal\commerce_order\Plugin\Field\FieldType\AdjustmentItemList",
  *   no_ui = TRUE,
  *   default_widget = "commerce_adjustment_default",

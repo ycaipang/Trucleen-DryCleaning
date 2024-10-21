@@ -7,7 +7,7 @@ use Drupal\ctools\Wizard\EntityFormWizardBase;
 /**
  *
  */
-class EntityEditWizard extends EntityFormWizardBase {
+class EntityEditWizardTest extends EntityFormWizardBase {
 
   /**
    * {@inheritdoc}

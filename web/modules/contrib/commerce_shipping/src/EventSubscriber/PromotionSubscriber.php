@@ -48,7 +48,7 @@ class PromotionSubscriber implements EventSubscriberInterface {
   /**
    * {@inheritdoc}
    */
-  public static function getSubscribedEvents(): array {
+  public static function getSubscribedEvents() {
     return [
       ShippingEvents::SHIPPING_RATES => 'onCalculate',
     ];
@@ -85,14 +85,12 @@ class PromotionSubscriber implements EventSubscriberInterface {
     // Calculate the discounted amounts.
     foreach ($rates as $rate) {
       $shipping_method->getPlugin()->selectRate($fake_shipment, $rate);
-      $pre_promotion_amount = $fake_shipment->getAmount();
       $fake_shipment->clearAdjustments();
       foreach ($promotions as $promotion) {
         if ($promotion->applies($fake_order)) {
           $promotion->apply($fake_order);
         }
       }
-      $rate->setPrePromotionAmount($pre_promotion_amount);
       $rate->setAmount($fake_shipment->getAmount());
     }
   }

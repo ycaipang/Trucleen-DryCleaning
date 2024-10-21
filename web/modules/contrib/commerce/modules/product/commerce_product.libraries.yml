@@ -1,3 +1,9 @@
+form:
+  version: VERSION
+  css:
+    theme:
+      css/product.form.css: {}
+
 rendered-attributes:
   version: VERSION
   css:

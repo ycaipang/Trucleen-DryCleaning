@@ -61,7 +61,7 @@ class PluginItemDeriver extends DeriverBase implements ContainerDeriverInterface
       $this->derivatives[$plugin_type] = [
         'plugin_type' => $plugin_type,
         'label' => $label,
-        'category' => 'plugin',
+        'category' => $this->t('Plugin'),
       ] + $base_plugin_definition;
     }
 
