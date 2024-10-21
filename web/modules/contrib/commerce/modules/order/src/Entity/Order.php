@@ -8,6 +8,7 @@ use Drupal\commerce_order\Event\OrderEvents;
 use Drupal\commerce_order\Event\OrderLabelEvent;
 use Drupal\commerce_order\Event\OrderProfilesEvent;
 use Drupal\commerce_order\Exception\OrderVersionMismatchException;
+use Drupal\commerce_order\OrderBalanceFieldItemList;
 use Drupal\commerce_price\Price;
 use Drupal\commerce_store\Entity\StoreInterface;
 use Drupal\Core\Datetime\DrupalDateTime;
@@ -477,22 +478,7 @@ class Order extends CommerceContentEntityBase implements OrderInterface {
       }
     }
     $this->total_price = $total_price;
-    $this->recalculateBalance();
 
-    return $this;
-  }
-
-  /**
-   * Recalculates the order balance.
-   *
-   * @return $this
-   */
-  protected function recalculateBalance() {
-    if ($total_price = $this->getTotalPrice()) {
-      // Provide a default without storing it, to avoid having to update
-      // the field if the order currency changes before the order is placed.
-      $this->set('balance', $total_price->subtract($this->getTotalPaid()));
-    }
     return $this;
   }
 
@@ -524,22 +510,15 @@ class Order extends CommerceContentEntityBase implements OrderInterface {
    */
   public function setTotalPaid(Price $total_paid) {
     $this->set('total_paid', $total_paid);
-    $this->recalculateBalance();
   }
 
   /**
    * {@inheritdoc}
    */
   public function getBalance() {
-    if (!$this->get('balance')->isEmpty()) {
-      return $this->get('balance')->first()->toPrice();
-    }
     if ($total_price = $this->getTotalPrice()) {
-      // Provide a default without storing it, to avoid having to update
-      // the field if the order currency changes before the order is placed.
       return $total_price->subtract($this->getTotalPaid());
     }
-    return NULL;
   }
 
   /**
@@ -927,11 +906,8 @@ class Order extends CommerceContentEntityBase implements OrderInterface {
       ->setLabel(t('Order balance'))
       ->setDescription(t('The order balance.'))
       ->setReadOnly(TRUE)
-      ->setDisplayOptions('view', [
-        'label' => 'hidden',
-        'type' => 'commerce_price_default',
-        'weight' => 0,
-      ])
+      ->setComputed(TRUE)
+      ->setClass(OrderBalanceFieldItemList::class)
       ->setDisplayConfigurable('form', FALSE)
       ->setDisplayConfigurable('view', TRUE);
 

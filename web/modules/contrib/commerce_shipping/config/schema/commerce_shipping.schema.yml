@@ -35,9 +35,6 @@ commerce.commerce_condition.plugin.shipment_weight:
     weight:
       type: field.value.physical_measurement
       label: 'Weight'
-    max_weight:
-      type: field.value.physical_measurement
-      label: 'Max weight'
 
 commerce_order.commerce_order_type.*.third_party.commerce_shipping:
   type: mapping

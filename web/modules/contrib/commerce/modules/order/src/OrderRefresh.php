@@ -179,9 +179,7 @@ class OrderRefresh implements OrderRefreshInterface {
     foreach ($order->getItems() as $order_item) {
       $purchased_entity = $order_item->getPurchasedEntity();
       if ($purchased_entity) {
-        if (!$order_item->isTitleOverridden()) {
-          $order_item->setTitle($purchased_entity->getOrderItemTitle());
-        }
+        $order_item->setTitle($purchased_entity->getOrderItemTitle());
         if (!$order_item->isUnitPriceOverridden()) {
           $unit_price = $this->chainPriceResolver->resolve($purchased_entity, $order_item->getQuantity(), $context);
           $unit_price ? $order_item->setUnitPrice($unit_price) : $order_item->set('unit_price', NULL);

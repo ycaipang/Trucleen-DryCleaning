@@ -30,7 +30,7 @@ class CartSubscriber implements EventSubscriberInterface {
   /**
    * {@inheritdoc}
    */
-  public static function getSubscribedEvents(): array {
+  public static function getSubscribedEvents() {
     return [
       CartEvents::CART_EMPTY => 'onCartEmpty',
       CartEvents::CART_ENTITY_ADD => ['onCartEntityAdd', -100],

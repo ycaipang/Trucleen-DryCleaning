@@ -4,12 +4,6 @@ base:
     base:
       css/commerce.base.css: {}
 
-form-layout:
-  version: VERSION
-  css:
-    layout:
-      css/commerce.form-layout.css: {}
-
 dashboard:
   version: VERSION
   css:
@@ -44,9 +38,3 @@ local-actions:
   css:
     theme:
       css/commerce.local-actions.css: {}
-
-field-ui:
-  version: VERSION
-  css:
-    theme:
-      css/commerce.field_ui.css: {}

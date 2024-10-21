@@ -11,7 +11,7 @@ class ShippingRatesSubscriber implements EventSubscriberInterface {
   /**
    * {@inheritdoc}
    */
-  public static function getSubscribedEvents(): array {
+  public static function getSubscribedEvents() {
     return [
       ShippingEvents::SHIPPING_RATES => 'onCalculate',
     ];

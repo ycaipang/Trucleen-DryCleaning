@@ -45,7 +45,6 @@ function commerce_cart_theme($existing, $type, $theme, $path) {
         'content' => NULL,
         'url' => NULL,
         'links' => [],
-        'dropdown' => FALSE,
       ],
     ],
     'commerce_cart_empty_page' => [

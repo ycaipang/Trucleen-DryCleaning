@@ -39,11 +39,9 @@
       if (requiredInputs.length) {
         once('shipping-recalculate', requiredInputs, context).forEach(
           (element) => {
-            if (!element.getAttribute('name').includes('[shipping_method]')) {
-              element.addEventListener('change', (el) => {
-                this.onChange(el.target);
-              });
-            }
+            element.addEventListener('change', (el) => {
+              this.onChange(el.target);
+            });
           },
         );
       }

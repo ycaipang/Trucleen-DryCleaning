@@ -49,7 +49,7 @@ class ShipmentSubscriber implements EventSubscriberInterface {
   /**
    * {@inheritdoc}
    */
-  public static function getSubscribedEvents(): array {
+  public static function getSubscribedEvents() {
     return [
       'commerce_shipment.ship.post_transition' => ['onShip'],
       ShippingEvents::SHIPMENT_DELETE => ['onShipmentDelete'],

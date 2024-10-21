@@ -13,10 +13,7 @@
    */
   Drupal.behaviors.commercePaymentRedirect = {
     attach: (context) => {
-      const form = context.querySelector('.payment-redirect-form');
-      if (form) {
-        form.submit();
-      }
+      $('.payment-redirect-form', context).submit();
     },
   };
 })(jQuery, Drupal);

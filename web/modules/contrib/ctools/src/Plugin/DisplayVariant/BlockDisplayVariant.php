@@ -208,7 +208,7 @@ abstract class BlockDisplayVariant extends VariantBase implements ContextAwareVa
   /**
    * {@inheritdoc}
    */
-  public function __sleep(): array {
+  public function __sleep() {
     $vars = parent::__sleep();
 
     // Gathered contexts objects should not be serialized.

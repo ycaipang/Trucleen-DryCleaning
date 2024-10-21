@@ -145,7 +145,7 @@ class CouponRedemptionPaneTest extends CommerceWebDriverTestBase {
       'card_number' => '1111',
       'billing_profile' => $profile,
       'reusable' => TRUE,
-      'expires' => strtotime('+1 year'),
+      'expires' => strtotime('2028/03/24'),
     ]);
     $payment_method1->setBillingProfile($profile);
     $payment_method1->save();
@@ -157,7 +157,7 @@ class CouponRedemptionPaneTest extends CommerceWebDriverTestBase {
       'card_number' => '9999',
       'billing_profile' => $profile,
       'reusable' => TRUE,
-      'expires' => strtotime('+1 year'),
+      'expires' => strtotime('2028/03/24'),
     ]);
     $payment_method2->setBillingProfile($profile);
     $payment_method2->save();

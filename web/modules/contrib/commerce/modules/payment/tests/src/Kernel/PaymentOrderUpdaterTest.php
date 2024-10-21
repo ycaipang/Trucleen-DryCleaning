@@ -109,7 +109,7 @@ class PaymentOrderUpdaterTest extends OrderKernelTestBase {
       'card_number' => '1111',
       'billing_profile' => $profile,
       'reusable' => TRUE,
-      'expires' => strtotime('+1 year'),
+      'expires' => strtotime('2028/03/24'),
     ]);
     $payment_method->setBillingProfile($profile);
     $payment_method->save();
